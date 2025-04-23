@@ -11,7 +11,7 @@ type Lexer struct {
 	input        string // text to be tokenized
 	position     int    // pointer to the current char
 	readPosition int    // pointer to the next char
-	character    byte   // represents ASCII character
+	char         byte   // represents ASCII character
 }
 
 func NewLexer(input string) *Lexer {
@@ -20,71 +20,100 @@ func NewLexer(input string) *Lexer {
 	return lexer
 }
 
-func (lexer *Lexer) NextToken() token.Token {
+func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
-	switch lexer.character {
+	l.skipWhitespace()
+
+	switch l.char {
 	case '=':
-		tok = newToken(token.ASSIGN, lexer.character)
+		tok = newToken(token.ASSIGN, l.char)
 	case ';':
-		tok = newToken(token.SEMICOLON, lexer.character)
+		tok = newToken(token.SEMICOLON, l.char)
 	case '(':
-		tok = newToken(token.LPAREN, lexer.character)
+		tok = newToken(token.LPAREN, l.char)
 	case ')':
-		tok = newToken(token.RPAREN, lexer.character)
+		tok = newToken(token.RPAREN, l.char)
 	case ',':
-		tok = newToken(token.COMMA, lexer.character)
+		tok = newToken(token.COMMA, l.char)
 	case '{':
-		tok = newToken(token.LBRACE, lexer.character)
+		tok = newToken(token.LBRACE, l.char)
 	case '}':
-		tok = newToken(token.RBRACE, lexer.character)
+		tok = newToken(token.RBRACE, l.char)
 	case '+':
-		tok = newToken(token.PLUS, lexer.character)
+		tok = newToken(token.PLUS, l.char)
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
-		if isLetter(lexer.character) {
-			tok.Literal = lexer.readIdentifier()
+		if isLetter(l.char) {
+			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
+		} else if isDigit(l.char) {
+			tok.Literal = l.readNumber()
+			tok.Type = token.INT
+			return tok
 		} else {
-			tok = newToken(token.ILLEGAL, lexer.character)
+			tok = newToken(token.ILLEGAL, l.char)
 		}
 	}
 
-	lexer.readChar()
+	l.readChar()
 	return tok
 }
 
 func (lexer *Lexer) readChar() {
 	if lexer.readPosition >= len(lexer.input) {
 		// ASCII code for the "NUL" character
-		lexer.character = 0
+		lexer.char = 0
 	} else {
-		lexer.character = lexer.input[lexer.readPosition]
+		lexer.char = lexer.input[lexer.readPosition]
 	}
 
 	lexer.position = lexer.readPosition
 	lexer.readPosition += 1
 }
 
-func (lexer *Lexer) readIdentifier() string {
-	position := lexer.position
-	for isLetter(lexer.character) {
-		lexer.readChar()
+func (l *Lexer) readIdentifier() string {
+	position := l.position
+	for isLetter(l.char) {
+		l.readChar()
 	}
 
-	result := lexer.input[position:lexer.position]
+	result := l.input[position:l.position]
 
 	fmt.Println("Result", result)
 
 	return result
 }
 
+func (l *Lexer) readNumber() string {
+	position := l.position
+	for isDigit(l.char) {
+		l.readChar()
+	}
+
+	result := l.input[position:l.position]
+
+	fmt.Println("Result", result)
+
+	return result
+}
+
+func (l *Lexer) skipWhitespace() {
+	for l.char == ' ' || l.char == '\t' || l.char == '\n' || l.char == '\r' {
+		l.readChar()
+	}
+}
+
 func isLetter(char byte) bool {
 	// comparing ASCII numeric values
 	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_'
+}
+
+func isDigit(char byte) bool {
+	return '0' <= char && char <= '9'
 }
 
 func newToken(tokenType token.TokenType, char byte) token.Token {
