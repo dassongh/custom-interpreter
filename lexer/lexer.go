@@ -1,8 +1,6 @@
 package lexer
 
 import (
-	"fmt"
-
 	"github.com/dassongh/custom-interpreter/token"
 )
 
@@ -81,11 +79,7 @@ func (l *Lexer) readIdentifier() string {
 		l.readChar()
 	}
 
-	result := l.input[position:l.position]
-
-	fmt.Println("Result", result)
-
-	return result
+	return l.input[position:l.position]
 }
 
 func (l *Lexer) readNumber() string {
@@ -94,11 +88,7 @@ func (l *Lexer) readNumber() string {
 		l.readChar()
 	}
 
-	result := l.input[position:l.position]
-
-	fmt.Println("Result", result)
-
-	return result
+	return l.input[position:l.position]
 }
 
 func (l *Lexer) skipWhitespace() {
