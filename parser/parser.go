@@ -8,6 +8,7 @@ import (
 	"github.com/dassongh/custom-interpreter/token"
 )
 
+// Precedence levels for operator parsing
 const (
 	_ int = iota
 	LOWEST
@@ -19,6 +20,7 @@ const (
 	CALL        // myFunction(X)
 )
 
+// Parser function types
 type (
 	prefixParseFn func() ast.Expression
 	infixParseFn  func(ast.Expression) ast.Expression
@@ -34,6 +36,10 @@ type Parser struct {
 	prefixParseFns map[token.TokenType]prefixParseFn
 	infixParseFns  map[token.TokenType]infixParseFn
 }
+
+//
+// Public API
+//
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
@@ -69,6 +75,22 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	return program
 }
+
+//
+// Parser registration
+//
+
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
+}
+
+//
+// Statement parsing
+//
 
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
@@ -127,6 +149,10 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmt
 }
 
+//
+// Expression parsing
+//
+
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
@@ -141,13 +167,9 @@ func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
-func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
-	p.prefixParseFns[tokenType] = fn
-}
-
-func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
-	p.infixParseFns[tokenType] = fn
-}
+//
+// Token handling
+//
 
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
@@ -171,6 +193,10 @@ func (p *Parser) curTokenIs(t token.TokenType) bool {
 func (p *Parser) peekTokenIs(t token.TokenType) bool {
 	return p.peekToken.Type == t
 }
+
+//
+// Error handling
+//
 
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type)
