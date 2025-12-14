@@ -1,14 +1,11 @@
 package evaluator
 
 import (
-	"fmt"
-
 	"github.com/dassongh/custom-interpreter/ast"
 	"github.com/dassongh/custom-interpreter/object"
 )
 
 func Eval(node ast.Node) object.Object {
-	fmt.Println("NODE IS: ", node)
 	switch node := node.(type) {
 
 	// Statements
@@ -20,6 +17,8 @@ func Eval(node ast.Node) object.Object {
 	// Expressions
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
+	case *ast.Boolean:
+		return &object.Boolean{Value: node.Value}
 	}
 
 	return nil

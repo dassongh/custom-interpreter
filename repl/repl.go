@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/dassongh/custom-interpreter/evaluator"
 	"github.com/dassongh/custom-interpreter/lexer"
 	"github.com/dassongh/custom-interpreter/parser"
 )
@@ -31,7 +32,12 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
+		evaluated := evaluator.Eval(program)
+		if evaluated == nil {
+			continue
+		}
+
+		io.WriteString(out, evaluated.Inspect())
 		io.WriteString(out, "\n")
 	}
 }
